@@ -6,11 +6,12 @@ from datetime import datetime
 from flask_login import UserMixin
 
 @login_manager.user_loader
-def load_user(user_id):
+def load_user(user_id):  
   return db.session.get(User, int(user_id))
 
 class User(db.Model, UserMixin):
   __tablename__ = 'user'
+
   id: Mapped[int] = mapped_column(Integer, primary_key=True)
   username: Mapped[str] = mapped_column(String(30), unique=True, nullable=False)
   email: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
@@ -22,6 +23,7 @@ class User(db.Model, UserMixin):
   updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
 
   pokemons: Mapped[List['Pokemon']] = relationship(back_populates='user')
+
   def __repr__(self):
     return f'<User: {self.username}>'
 
@@ -30,19 +32,22 @@ pokedex = Table(
   db.metadata,
   Column('type_id', Integer, ForeignKey('type.id'), primary_key=True),
   Column('pokemon_id', Integer, ForeignKey('pokemon.id'), primary_key=True)
-)  
+)
 
 class Type(db.Model):
   __tablename__ = 'type'
+
   id: Mapped[int] = mapped_column(Integer, primary_key=True)
   name: Mapped[str] = mapped_column(String(30), unique=True, nullable=False)
 
   pokemons: Mapped[List['Pokemon']] = relationship(back_populates='types', secondary=pokedex)
+
   def __repr__(self):
     return f'<Type: {self.name}>'
-  
+
 class Pokemon(db.Model):
   __tablename__ = 'pokemon'
+
   id: Mapped[int] = mapped_column(Integer, primary_key=True)
   name: Mapped[str] = mapped_column(String(30), unique=True, nullable=False)
   height: Mapped[str] = mapped_column(String(20), nullable=False)
@@ -54,5 +59,6 @@ class Pokemon(db.Model):
 
   user: Mapped[User] = relationship(back_populates='pokemons')
   types: Mapped[List['Type']] = relationship(back_populates='pokemons', secondary=pokedex)
+
   def __repr__(self):
     return f'<Pokemon: {self.name}>'
